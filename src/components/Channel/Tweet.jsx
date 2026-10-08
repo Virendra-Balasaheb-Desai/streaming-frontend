@@ -1,32 +1,92 @@
-import React, { useState } from "react";
-import { tweets } from "../data";
+import React, { useEffect, useState } from "react";
 import {
     UsersIcon,
-    HandThumbDownIcon,
-    HandThumbUpIcon,
-    FaceSmileIcon,
-    EllipsisHorizontalIcon,
+    HandThumbUpIcon
 } from "@heroicons/react/24/outline";
+import tweet from "../../api/tweet";
+import { useParams } from "react-router-dom";
+import Loading from "../Loading";
+import { formatTimeAgo } from "../../utils";
+import ErrorState from "../ErrorState";
+import { useSelector } from "react-redux";
 
 const Tweet = () => {
-    const [isOwner, setIsOwner] = useState(true);
+    const [isOwner, setIsOwner] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [tweets, setTweets] = useState([]);
+    const [error, setError] = useState(null);
+    const { channelId } = useParams();
+    const { user } = useSelector((state) => state.auth);
+
+    const [content, setContent] = useState("");
+
+    useEffect(() => {
+        if (user && user._id === channelId) {
+            setIsOwner(true);
+        }
+    }, [user, channelId]);
+
+    const getTweets = async () => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const data = await tweet.getUserTweets(channelId);
+            setTweets(data);
+        } catch (e) {
+            setError(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getTweets();
+    }, []);
+
+    const postTweet = async () => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const data = await tweet.createTweet({ content });
+            setContent("");
+            getTweets();
+        } catch (e) {
+            setError(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading) {
+        return <Loading />;
+    }
+
+    if (error)
+        return (
+            <ErrorState message={error?.message || "Something went wrong"} />
+        );
 
     return (
         <>
             {!!isOwner && (
                 <div className="mt-2 border pb-2">
                     <textarea
-                        className="mb-2 h-10 w-full resize-none border-none bg-transparent px-3 pt-2 outline-none"
+                        className="mb-2 h-30 w-full resize-none border-none bg-transparent px-3 pt-2 outline-none"
                         placeholder="Write a tweet"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
                     ></textarea>
                     <div className="flex items-center justify-end gap-x-3 px-3">
-                        <button className="inline-block h-5 w-5 hover:text-[#ae7aff]">
+                        {/* <button className="inline-block h-5 w-5 hover:text-[#ae7aff]">
                             <FaceSmileIcon strokeWidth={2} />
                         </button>
                         <button className="inline-block h-5 w-5 hover:text-[#ae7aff]">
                             <EllipsisHorizontalIcon strokeWidth={2} />
-                        </button>
-                        <button className="bg-[#ae7aff] px-3 py-2 font-semibold text-black">
+                        </button> */}
+                        <button
+                            className="bg-[#ae7aff] px-3 py-2 font-semibold text-black"
+                            onClick={postTweet}
+                        >
                             Send
                         </button>
                     </div>
@@ -53,24 +113,24 @@ const Tweet = () => {
                 <div className="py-4">
                     {tweets.map((tweet) => (
                         <div
-                            key={tweet.id}
+                            key={tweet._id}
                             className="flex gap-3 border-b border-gray-700 py-4 last:border-b-transparent"
                         >
                             <div className="h-14 w-14 shrink-0">
                                 <img
-                                    src={tweet.owner.avatar}
-                                    alt={tweet.owner.fullName}
+                                    src={tweet.owner[0].avatar}
+                                    alt="avatar"
                                     className="h-full w-full rounded-full"
                                 />
                             </div>
                             <div className="w-full">
                                 <h4 className="mb-1 flex items-center gap-x-2">
                                     <span className="font-semibold">
-                                        {tweet.owner.fullName}
+                                        {tweet.owner[0].fullName}
                                     </span>
                                     &nbsp;
                                     <span className="inline-block text-sm text-gray-400">
-                                        {tweet.createdAt}
+                                        {formatTimeAgo(tweet.createdAt)}
                                     </span>
                                 </h4>
                                 <p className="mb-2">{tweet.content}</p>
@@ -92,7 +152,7 @@ const Tweet = () => {
                                             }`}
                                         />
                                     </button>
-                                    <button
+                                    {/* <button
                                         className={`group inline-flex items-center gap-x-1 outline-none after:content-[attr(data-dislike-count)] focus:after:content-[attr(data-dislike-count-alt)]`}
                                         data-dislike-count={tweet.dislikeCount}
                                         data-dislike-count-alt={
@@ -108,7 +168,7 @@ const Tweet = () => {
                                                     : "text-inherit group-focus:text-[#ae7aff]"
                                             }`}
                                         />
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
                         </div>

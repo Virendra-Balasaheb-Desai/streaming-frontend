@@ -5,12 +5,12 @@ It provides the user interface for browsing videos, viewing details, posting com
 
 ## Tech Stack
 
-* React
-* JavaScript
-* Tailwind
-* React Router for navigation
+- React
+- JavaScript
+- Tailwind
+- React Router for navigation
 
-##  Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 
@@ -35,13 +35,11 @@ Create a `.env` file using `.env.example`.
 npm run dev
 ```
 
-
 The app will run on:
 
 ```
 http://localhost:5147
 ```
-
 
 ## Backend
 

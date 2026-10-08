@@ -204,45 +204,82 @@ export const navItems = [
         name: "Home",
         mobileView: true,
         icon: icons.home,
+        url: "",
+    },
+    // {
+    //     name: "Liked Videos",
+    //     mobileView: false,
+    //     icon: icons.like,
+    // },
+    // {
+    //     name: "History",
+    //     mobileView: true,
+    //     icon: icons.history,
+    // },
+    // {
+    //     name: "My Content",
+    //     mobileView: false,
+    //     icon: icons.myContent,
+    // },
+    // {
+    //     name: "Collections",
+    //     mobileView: true,
+    //     icon: icons.collections,
+    // },
+    // {
+    //     name: "Subscribers",
+    //     mobileView: true,
+    //     icon: icons.subscribers,
+    // },
+    // {
+    //     name: "Support",
+    //     mobileView: false,
+    //     icon: icons.support,
+    // },
+    // {
+    //     name: "Settings",
+    //     mobileView: false,
+    //     icon: icons.settings,
+    // },
+    {
+        name: "Account",
+        mobileView: true,
+        icon: icons.settings,
+        url: "account",
     },
     {
-        name: "Liked Videos",
-        mobileView: false,
-        icon: icons.like,
+        name: "Dashboard",
+        mobileView: true,
+        icon: icons.settings,
+        url: "dashboard",
     },
+    // {
+    //     name: "Channel",
+    //     mobileView: true,
+    //     icon: icons.settings,
+    //     url: "channel"
+    // },
     {
         name: "History",
-        mobileView: true,
-        icon: icons.history,
-    },
-    {
-        name: "My Content",
         mobileView: false,
-        icon: icons.myContent,
-    },
-    {
-        name: "Collections",
-        mobileView: true,
-        icon: icons.collections,
-    },
-    {
-        name: "Subscribers",
-        mobileView: true,
-        icon: icons.subscribers,
+        icon: icons.history,
+        url: "watch-history",
     },
     {
         name: "Support",
         mobileView: false,
         icon: icons.support,
+        url: "support",
     },
     {
         name: "Settings",
         mobileView: false,
         icon: icons.settings,
+        url: "settings",
     },
 ];
 
-export const siteNavItems = ["Home", "Products", "Resources", "Pricing"];
+export const siteNavItems = ["Home", "Account", "Channel", "Dashboard"];
 
 export const bottomTotalItems = 2;
 
@@ -1189,9 +1226,28 @@ export const tweets = [
         },
     },
 ];
-
+//need a look
 export const channels = videos.map((video, i) => ({
     ...video.owner,
     subscribers: 20 * (i + 1) + "K",
     isSubscribed: i % 2 == 0,
 }));
+
+// [
+//     {
+//         id: "1",
+//         username: "codemaster",
+//         fullName: "Code Master",
+//         avatar: "https://images.pexels.com/photos/3532545/pexels-photo-3532545.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+//         subscribers: "757K",
+//         isSubscribed: true,
+//     },
+//     {
+//         id: "21",
+//         username: "codemaster",
+//         fullName: "Code Master",
+//         avatar: "https://images.pexels.com/photos/3532545/pexels-photo-3532545.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+//         subscribers: "757K",
+//         isSubscribed: true,
+//     },
+// ]

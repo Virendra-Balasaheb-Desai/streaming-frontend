@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
 import Register from "./pages/Register";
+import Auth from "./components/Auth";
+import WatchHistory from "./pages/WatchHistory";
 
 export const router = createBrowserRouter([
     {
@@ -21,36 +23,60 @@ export const router = createBrowserRouter([
                 element: <Home />,
             },
             {
-                path: "/search",
+                path: "/search/:query",
                 element: <Search />,
             },
             {
-                path: "/play",
+                path: "/play/:videoId",
                 element: <Play />,
             },
             {
                 path: "/account",
-                element: <Account />,
+                element: (
+                    <Auth protectedRoute={true}>
+                        <Account />
+                    </Auth>
+                ),
             },
             {
-                path: "/channel",
+                path: "/channel/:channelId",
                 element: <Channel />,
             },
             {
-                path: "/playlist",
+                path: "/playlist/:playlistId",
                 element: <Playlist />,
             },
             {
                 path: "/dashboard",
-                element: <Dashboard />,
+                element: (
+                    <Auth protectedRoute={true}>
+                        <Dashboard />
+                    </Auth>
+                ),
+            },
+            {
+                path: "/watch-history",
+                element: (
+                    <Auth protectedRoute={true}>
+                        <WatchHistory />
+                    </Auth>
+                ),
             },
             {
                 path: "/login",
-                element: <Login />,
+                element: (
+                    <Auth protectedRoute={false}>
+                        <Login />
+                    </Auth>
+                ),
             },
             {
                 path: "/register",
-                element: <Register />,
+                element: (
+                    <Auth protectedRoute={false}>
+                        <Register />
+                    </Auth>
+                ),
             },
             {
                 path: "/*",

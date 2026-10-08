@@ -1,7 +1,18 @@
-import React from "react";
-import { ClockIcon, ListBulletIcon } from "@heroicons/react/24/outline";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
 const EditChannelInfo = () => {
+    const { user } = useSelector((state) => state.auth);
+
+    const [channelInfoUpdate, setChannelInfoUpdate] = useState({
+        username: user?.username,
+        description: user?.description,
+    });
+
+    const handleChannelInputChange = (e) => {
+        const { id, value } = e.target;
+        setChannelInfoUpdate((prev) => ({ ...prev, [id]: value }));
+    };
     return (
         <div className="flex flex-wrap justify-center gap-y-4 py-4">
             <div className="w-full sm:w-1/2 lg:w-1/3">
@@ -29,7 +40,10 @@ const EditChannelInfo = () => {
                                     className="w-full bg-transparent px-2 py-1.5"
                                     id="username"
                                     placeholder="@username"
-                                    defaultValue="reactpatterns"
+                                    value={channelInfoUpdate?.username}
+                                    onChange={(e) =>
+                                        handleChannelInputChange(e)
+                                    }
                                 />
                             </div>
                         </div>
@@ -45,10 +59,10 @@ const EditChannelInfo = () => {
                                 defaultValue="I'm a Product Designer based in Melbourne, Australia. I specialise in UX/UI design, brand strategy, and Webflow development."
                             ></textarea>
                             <p className="mt-0.5 text-sm text-gray-300">
-                                275 characters left
+                                {/* 275 characters left */}
                             </p>
                         </div>
-                        <div className="flex w-full items-center gap-3">
+                        {/* <div className="flex w-full items-center gap-3">
                             <div className="w-full max-w-xs rounded-lg border">
                                 <select
                                     className="w-full border-r-8 border-transparent bg-transparent py-1.5 pl-2"
@@ -260,7 +274,7 @@ const EditChannelInfo = () => {
                                     </option>
                                 </select>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <hr className="border border-gray-300" />
                     <div className="flex items-center justify-end gap-4 p-4">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     PlayIcon,
     PlusIcon,
@@ -7,13 +7,110 @@ import {
     XMarkIcon,
     CheckCircleIcon,
 } from "@heroicons/react/24/outline";
-import { videos } from "../data";
+import video from "../../api/video";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Loading from "../Loading";
+import { formatDuration, formatSize, formatTimeAgo } from "../../utils";
+import ErrorState from "../ErrorState";
+import { useSelector } from "react-redux";
 
 const Video = () => {
-    const [isOwner, setIsOwner] = useState(true);
+    const [isOwner, setIsOwner] = useState(false);
     const [isUpload, setIsUpload] = useState(false);
-    const [isUploading, setIsUploading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
     const [isUploaded, setIsUploaded] = useState(false);
+    const [videos, setVideos] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [data, setData] = useState({});
+    const [isDragging, setIsDragging] = useState(false);
+
+    const { channelId } = useParams();
+    const navigate = useNavigate();
+
+    const { user } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if (user && user._id === channelId) {
+            setIsOwner(true);
+        }
+    }, [user, channelId]);
+
+    //getALLVideo
+    const getAllVideo = async () => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const data = await video.getVideos(channelId);
+            const fetchedData = data?.docs;
+            setVideos([...videos, ...fetchedData]);
+        } catch (e) {
+            console.log(e);
+            setError(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getAllVideo();
+        console.log(videos);
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFile = (e) => {
+        const { name, files } = e.target;
+        console.log(name, files[0]);
+        setData((prev) => ({ ...prev, [name]: files[0] }));
+    };
+
+    const handleSubmit = async () => {
+        try {
+            setError(null);
+            setIsUpload(false);
+            setIsUploading(true);
+            const formData = new FormData();
+            for (const key in data) {
+                formData.append(key, data[key]);
+            }
+            const fetchData = await video.publishVideo(formData);
+            console.log(fetchData);
+            setIsUploaded(true);
+        } catch (e) {
+            setError(e);
+            console.log(e);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleVideoClick = (videoId) => {
+        navigate(`/play/${videoId}`);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        // e.stopPropagation();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files[0];
+        console.log(file);
+        if (file && file.type.startsWith("video/")) {
+            setData((prev) => ({ ...prev, video: file }));
+        }
+    };
+
+    if (isLoading) return <Loading />;
+
+    if (error)
+        return (
+            <ErrorState message={error?.message || "Something went wrong"} />
+        );
 
     return (
         <>
@@ -48,9 +145,13 @@ const Video = () => {
             ) : (
                 <div className="grid grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))] gap-4 pt-2">
                     {videos
-                        .filter((video) => video.isPublished)
+                        .filter((video) => video.isPublised)
                         .map((video) => (
-                            <div key={video.id} className="w-full">
+                            <div
+                                key={video._id}
+                                className="w-full"
+                                onClick={() => handleVideoClick(video._id)}
+                            >
                                 <div className="relative mb-2 w-full pt-[56%]">
                                     <div className="absolute inset-0">
                                         <img
@@ -60,7 +161,7 @@ const Video = () => {
                                         />
                                     </div>
                                     <span className="absolute bottom-1 right-1 inline-block rounded bg-black px-1.5 text-sm">
-                                        {video.duration}
+                                        {formatDuration(video.duration)}
                                     </span>
                                 </div>
                                 <h6 className="mb-1 font-semibold">
@@ -68,7 +169,8 @@ const Video = () => {
                                 </h6>
                                 <p className="flex text-sm text-gray-200">
                                     {video.views}&nbsp;Views &middot;{" "}
-                                    {video.time}
+                                    {formatTimeAgo(video.createdAt)}
+                                    {/* upload time */}
                                 </p>
                             </div>
                         ))}
@@ -83,7 +185,10 @@ const Video = () => {
                                 Upload Videos
                             </h2>
                             <div className="flex items-center justify-between gap-4">
-                                <button className="group/btn mr-1 flex w-auto items-center gap-x-2 bg-[#ae7aff] px-3 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">
+                                <button
+                                    className="group/btn mr-1 flex w-auto items-center gap-x-2 bg-[#ae7aff] px-3 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]"
+                                    onClick={handleSubmit}
+                                >
                                     Upload
                                 </button>
                                 <button
@@ -95,7 +200,20 @@ const Video = () => {
                             </div>
                         </div>
                         <div className="mx-auto flex w-full max-w-3xl flex-col gap-y-4 p-4">
-                            <div className="w-full border-2 border-dashed px-4 py-12 text-center">
+                            <div
+                                className={`w-full border-2 border-dashed px-4 py-12 text-center ${isDragging ? "border-[#ae7aff] bg-[#ae7aff]/10" : ""}`}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    // e.stopPropagation();
+                                    setIsDragging(true);
+                                }}
+                                onDrop={handleDrop}
+                                onDragLeave={(e) => {
+                                    // e.preventDefault();
+                                    // e.stopPropagation();
+                                    setIsDragging(false);
+                                }}
+                            >
                                 <span className="mb-4 inline-block w-24 rounded-full bg-[#E4D3FF] p-4 text-[#AE7AFF]">
                                     <ArrowUpTrayIcon />
                                 </span>
@@ -114,6 +232,10 @@ const Video = () => {
                                         type="file"
                                         id="upload-video"
                                         className="sr-only"
+                                        name="video"
+                                        accept="video/*"
+                                        onChange={handleFile}
+                                        required
                                     />
                                     Select Files
                                 </label>
@@ -129,6 +251,10 @@ const Video = () => {
                                     id="thumbnail"
                                     type="file"
                                     className="w-full border p-1 file:mr-4 file:border-none file:bg-[#ae7aff] file:px-3 file:py-1.5"
+                                    name="thumbnail"
+                                    accept="image/*"
+                                    onChange={handleFile}
+                                    required
                                 />
                             </div>
                             <div className="w-full">
@@ -142,6 +268,10 @@ const Video = () => {
                                     id="title"
                                     type="text"
                                     className="w-full border bg-transparent px-2 py-1 outline-none"
+                                    name="title"
+                                    value={data.title}
+                                    onChange={handleChange}
+                                    required
                                 />
                             </div>
                             <div className="w-full">
@@ -154,6 +284,10 @@ const Video = () => {
                                 <textarea
                                     id="desc"
                                     className="h-40 w-full resize-none border bg-transparent px-2 py-1 outline-none"
+                                    name="description"
+                                    value={data.description}
+                                    onChange={handleChange}
+                                    required
                                 ></textarea>
                             </div>
                         </div>
@@ -166,7 +300,7 @@ const Video = () => {
                     <div className="w-full max-w-lg overflow-auto rounded-lg border border-gray-700 bg-[#121212] p-4">
                         <div className="mb-4 flex items-start justify-between">
                             <h2 className="text-xl font-semibold">
-                                {!!isUpload && "Uploading Video..."}
+                                {!!isUploading && "Uploading Video..."}
                                 {!!isUploaded && "Uploaded Video"}
                                 <span className="block text-sm text-gray-300">
                                     Track your video uploading process.
@@ -189,9 +323,11 @@ const Video = () => {
                                 </span>
                             </div>
                             <div className="flex flex-col">
-                                <h6>Dashboard prototype recording.mp4</h6>
-                                <p className="text-sm">16 MB</p>
-                                <div class="mt-2 flex items-center">
+                                <h6>{data.video?.name}</h6>
+                                <p className="text-sm">
+                                    {formatSize(data.video?.size)}
+                                </p>
+                                <div className="mt-2 flex items-center">
                                     {!!isUploading && (
                                         <>
                                             <svg
